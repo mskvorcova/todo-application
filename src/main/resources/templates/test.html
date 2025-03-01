@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Тест EasyMDE</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde@2.16.0/dist/easymde.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde@2.16.0/dist/easymde.min.js"></script>
+</head>
+<body>
+<label for="content"></label><textarea id="content"></textarea>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    new EasyMDE({
+      element: document.getElementById('content'),
+      spellChecker: false,
+      autoDownloadFontAwesome: true,
+      toolbar: [
+        "bold", "italic", "strikethrough", "|",
+        "unordered-list", "ordered-list", "|",
+        "link", "image", "|",
+        "quote", "|",
+        "code",
+      ],
+      placeholder: "Введите текст...",
+      minHeight: "400px",
+    });
+  });
+</script>
+</body>
+</html>

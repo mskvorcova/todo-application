@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Todo List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      position: fixed;
+      left: 0;
+      top: 0;
+      background-color: #1e1e2e;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #f8f8f2;
+      text-align: left;
+      font-size: 16px;
+      transition: 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .sidebar button:hover {
+      background-color: #44475a;
+    }
+
+    .container {
+      margin-left: 270px;
+      display: flex;
+      flex: 1;
+      height: 100vh;
+      padding: 30px;
+      gap: 20px;
+    }
+
+    .left-panel {
+      flex: 1;
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .button-primary {
+      background-color: #6272a4;
+      color: #ffffff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    .button-primary:hover {
+      background-color: #7089d1;
+    }
+  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+</head>
+<body>
+<div class="sidebar">
+  <form action="tasks/redirectTasks" method="post">
+    <button class="flex items-center justify-start w-full h-10 px-4 py-2 rounded-lg hover:bg-gray-100">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22c1.104 0 2-.896 2-2H10c0 1.104.896 2 2 2z"/>
+        <path d="M18 16V7c0-3.313-2.686-6-6-6S6 3.687 6 7v9l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      Напоминания
+    </button>
+  </form>
+  <form action="tasks/redirectNotes" method="post">
+    <button class="flex items-center justify-start w-full h-10 px-4 py-2 rounded-lg hover:bg-gray-100">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16v16H4z"/>
+        <path d="M8 2v4M16 2v4M3 10h18"/>
+      </svg>
+      Заметки
+    </button>
+  </form>
+  <button class="flex items-center justify-start w-full h-10 px-4 py-2 rounded-lg hover:bg-gray-100">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="16" rx="2"/>
+      <path d="M16 2v4M8 2v4M3 10h18"/>
+    </svg>
+    Календарь
+  </button>
+</div>
+
+<div class="container">
+  <div class="left-panel">
+    <h2 class="text-xl font-semibold">Мои задачи</h2>
+    <form action="/tasks/create" method="post" class="space-y-3">
+      <input type="text" name="name" placeholder="Название задачи" required
+             class="w-full p-2 border rounded-lg">
+      <input type="date" name="dueDate" class="w-full p-2 border rounded-lg">
+      <div id="taskDescription" name="description"></div>
+      <button type="submit" class="button-primary">Добавить</button>
+    </form>
+    <hr class="my-5">
+    <ul th:if="${not tasks.empty}" class="space-y-1">
+      <li th:each="task : ${tasks}" th:classappend="${task.state} ? 'completed'"
+          class="flex items-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer">
+        <form action="/tasks/toggle" method="post" class="mr-2">
+          <input type="hidden" name="id" th:value="${task.id}">
+          <input type="checkbox" th:checked="${task.state}" onchange="this.form.submit()" class="cursor-pointer">
+        </form>
+        <form action="/tasks" method="get" class="flex-1">
+          <input type="hidden" name="selectedId" th:value="${task.id}">
+          <button type="submit" class="w-full text-left font-medium hover:underline"
+                  th:text="${task.name}"></button>
+        </form>
+        <div class="flex justify-between items-center mb-4">
+          <p class="text-gray-500 text-sm" th:if="${task.dueDate}">
+            Срок: <span th:text="${#temporals.format(task.dueDate, 'dd.MM.yyyy')}"></span>
+          </p>
+          <form action="/tasks/delete" method="post">
+            <input type="hidden" name="id" th:value="${task.id}">
+            <button type="submit" class="text-gray-400 hover:text-red-500">✖</button>
+          </form>
+        </div>
+
+      </li>
+    </ul>
+  </div>
+
+  <!-- Правая колонка: Информация о задаче -->
+  <div class="left-panel">
+    <div th:if="${selectedTask}" class="p-4 bg-gray-50 rounded-lg shadow-sm">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-xl font-semibold" th:text="${selectedTask.name}"></h3>
+          <h3 class="text-gray-500 text-sm" th:if="${selectedTask.dueDate}">
+            Срок: <span th:text="${#temporals.format(selectedTask.dueDate, 'dd.MM.yyyy')}"></span>
+          </h3>
+        </div>
+        <!-- Кнопка "Редактировать" -->
+        <button id="edit-button" class="button-primary" onclick="toggleEditForm()">Редактировать</button>
+      </div>
+      <div id="description" th:utext="${@markdownService.convertToHtml(selectedTask.description)}" class="task-description"></div>
+      <!-- Форма для редактирования задачи -->
+      <div id="edit-form" class="mt-4" style="display: none;">
+        <h3 class="text-lg font-semibold">Редактировать задачу</h3>
+        <form action="/tasks/edit" method="post" class="space-y-3">
+          <input type="hidden" name="id" th:value="${selectedTask.id}">
+
+          <!-- Название задачи -->
+          <input type="text" name="name" th:value="${selectedTask.name}" placeholder="Название задачи"
+                 class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" required>
+
+          <div id="taskNewDescription" name="description"></div>
+          <input type="hidden" id="hiddenNewDescription" name="description">
+
+          <button type="submit" class="px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600">
+            Сохранить
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div th:if="${selectedTask == null}" class="text-gray-500 text-center">Выберите задачу</div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Инициализация Quill для нового описания задачи
+      var quillTaskNewDescription = new Quill('#taskNewDescription', {
+        theme: 'snow',
+        placeholder: 'Описание задачи...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ],
+        },
+      });
+
+      // При изменении текста обновляем скрытое поле для отправки формы (для нового описания задачи)
+      quillTaskNewDescription.on('text-change', function () {
+        document.querySelector('#hiddenNewDescription').value = quillTaskNewDescription.root.innerHTML;
+      });
+
+      // Функция для отображения/скрытия формы редактирования
+      function toggleEditForm() {
+        var editForm = document.getElementById("edit-form");
+        var taskDescriptionDiv = document.querySelector(".task-description");
+        var editButton = document.getElementById("edit-button");
+
+        // Проверяем, если форма редактирования скрыта, показываем ее
+        if (editForm.style.display === "none" || editForm.style.display === "") {
+          editForm.style.display = "block";
+          taskDescriptionDiv.style.display = "none";  // Скрыть описание
+          editButton.textContent = "Отменить";
+
+          // Загружаем описание в Quill редактор
+          quillTaskNewDescription.root.innerHTML = document.getElementById("description").innerHTML;
+        } else {
+          editForm.style.display = "none";
+          taskDescriptionDiv.style.display = "block";  // Показываем описание
+          editButton.textContent = "Редактировать";
+        }
+      }
+
+      // Привязываем обработчик события к кнопке редактирования
+      var editButton = document.getElementById("edit-button");
+      if (editButton) {
+        editButton.addEventListener("click", toggleEditForm);
+      }
+    });
+  </script>
+</div>>
+</body>
+</html>
